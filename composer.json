@@ -13,5 +13,8 @@
     ],
     "autoload": {
         "files": ["src/PHPUnit/TeamCity/TestListener.php"]
+    },
+    "config": {
+        "bin-dir": "bin"
     }
 }
