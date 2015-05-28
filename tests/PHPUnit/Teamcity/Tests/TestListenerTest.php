@@ -4,6 +4,7 @@ namespace PHPUnit\TeamCity\Tests;
 
 use PHPUnit\TeamCity\TestListener;
 use AspectMock\Test as test;
+use SebastianBergmann\Comparator\ComparisonFailure;
 
 class TestListenerTest extends \PHPUnit_Framework_TestCase
 {
@@ -174,6 +175,47 @@ EOS;
 EOS;
 
         $this->assertStringEndsWith($expectedOutputEnd, $this->readOut());
+    }
+
+    public function testAddFailureTestCase()
+    {
+        /* @var \PHPUnit_Framework_TestCase $testCaseMock */
+        $testCaseMock = $this->getMockForAbstractClass('\PHPUnit_Framework_TestCase', array('testMethod'), 'TestCase');
+
+        $test = $this->createTestMock('FailedTest');
+
+        $comparisonFailure = new ComparisonFailure(
+            'expected',
+            'actual',
+            'expectedAsString',
+            'actualAsString'
+        );
+
+        $thrownException = new \PHPUnit_Framework_ExpectationFailedException('ExpectationFailed', $comparisonFailure);
+        $result = new \PHPUnit_Framework_TestResult();
+        $result->addFailure($test, $thrownException, 2);
+
+        $testCaseMock->setTestResultObject($result);
+
+        $exception = new \PHPUnit_Framework_AssertionFailedError('Assertion error');
+        $time = 5;
+
+        $this->listener->addFailure($testCaseMock, $exception, $time);
+
+        $message = $this->readOut();
+
+        $expectedOutputStart = <<<EOS
+##teamcity[testFailed type='comparisonFailure' message='Assertion error' details=
+EOS;
+        $this->assertStringStartsWith($expectedOutputStart, $message);
+
+
+        $expectedOutputEnd = <<<EOS
+ expected='expectedAsString' actual='actualAsString' name='TestCase.testMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+
+EOS;
+
+        $this->assertStringEndsWith($expectedOutputEnd, $message);
     }
 
     /**
