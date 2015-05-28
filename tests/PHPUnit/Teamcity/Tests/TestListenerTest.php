@@ -194,6 +194,7 @@ EOS;
         $thrownException = new \PHPUnit_Framework_ExpectationFailedException('ExpectationFailed', $comparisonFailure);
         $result = new \PHPUnit_Framework_TestResult();
         $result->addFailure($test, $thrownException, 2);
+        $result->addFailure($test, $thrownException, 3);
 
         $testCaseMock->setTestResultObject($result);
 

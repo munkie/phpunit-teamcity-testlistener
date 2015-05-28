@@ -34,7 +34,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     /**
      * Create service message
      *
-     * @param $type
+     * @param string $type
      * @param \PHPUnit_Framework_Test $test
      * @param array $params
      * @return string
@@ -46,7 +46,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
         $params += array(
             'name' => $this->getTestName($test),
             'timestamp' => date("Y-m-d\\TH:i:s.{$msec}O", $sec),
-            'flowId' => $this->getFlowId($test),
+            'flowId' => $this->getFlowId($test)
         );
         $message = "##teamcity[{$type}";
         foreach ($params as $name => $value) {
@@ -169,7 +169,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
                 if (null !== $comparisonFailure) {
                     $params += array(
                         'expected' => $comparisonFailure->getExpectedAsString(),
-                        'actual' => $comparisonFailure->getActualAsString(),
+                        'actual' => $comparisonFailure->getActualAsString()
                     );
                 }
             }
