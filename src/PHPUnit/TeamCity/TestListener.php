@@ -19,12 +19,27 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     protected $captureStandardOutput = 'true';
 
     /**
+     * Create and write service message to out
+     *
      * @param string $type
+     * @param \PHPUnit_Framework_Test $test
+     * @param array $params
+     */
+    protected function writeServiceMessage($type, \PHPUnit_Framework_Test $test, array $params = array())
+    {
+        $message = $this->createServiceMessage($type, $test, $params);
+        $this->write($message);
+    }
+
+    /**
+     * Create service message
+     *
+     * @param $type
      * @param \PHPUnit_Framework_Test $test
      * @param array $params
      * @return string
      */
-    protected function getServiceMessage($type, \PHPUnit_Framework_Test $test, array $params = array())
+    protected function createServiceMessage($type, \PHPUnit_Framework_Test $test, array $params = array())
     {
         list($usec, $sec) = explode(' ', microtime());
         $msec = floor($usec * 1000);
@@ -99,7 +114,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     public function addError(\PHPUnit_Framework_Test $test, \Exception $e, $time)
     {
-        $message = $this->getServiceMessage(
+        $this->writeServiceMessage(
             self::MESSAGE_TEST_FAILED,
             $test,
             array(
@@ -107,7 +122,6 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
                 'details' => $e->getTraceAsString(),
             )
         );
-        $this->write($message);
     }
 
     /**
@@ -160,8 +174,8 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
                 }
             }
 
-            $message = $this->getServiceMessage(self::MESSAGE_TEST_FAILED, $test, $params);
-            $this->write($message);
+            $this->writeServiceMessage(self::MESSAGE_TEST_FAILED, $test, $params);
+
             $failures[$hash] = true;
         }
     }
@@ -175,14 +189,13 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     public function addIncompleteTest(\PHPUnit_Framework_Test $test, \Exception $e, $time)
     {
-        $message = $this->getServiceMessage(
+        $this->writeServiceMessage(
             self::MESSAGE_TEST_IGNORED,
             $test,
             array(
                 'message' => $e->getMessage(),
             )
         );
-        $this->write($message);
     }
 
     /**
@@ -207,14 +220,13 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     public function addSkippedTest(\PHPUnit_Framework_Test $test, \Exception $e, $time)
     {
-        $message = $this->getServiceMessage(
+        $this->writeServiceMessage(
             self::MESSAGE_TEST_IGNORED,
             $test,
             array(
                 'message' => $e->getMessage(),
             )
         );
-        $this->write($message);
     }
 
     /**
@@ -224,11 +236,10 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     public function startTestSuite(\PHPUnit_Framework_TestSuite $suite)
     {
-        $message = $this->getServiceMessage(
+        $this->writeServiceMessage(
             self::MESSAGE_SUITE_STARTED,
             $suite
         );
-        $this->write($message);
     }
 
     /**
@@ -238,11 +249,10 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     public function endTestSuite(\PHPUnit_Framework_TestSuite $suite)
     {
-        $message = $this->getServiceMessage(
+        $this->writeServiceMessage(
             self::MESSAGE_SUITE_FINISHED,
             $suite
         );
-        $this->write($message);
     }
 
     /**
@@ -252,14 +262,13 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     public function startTest(\PHPUnit_Framework_Test $test)
     {
-        $message = $this->getServiceMessage(
+        $this->writeServiceMessage(
             self::MESSAGE_TEST_STARTED,
             $test,
             array(
                 'captureStandardOutput' => $this->captureStandardOutput,
             )
         );
-        $this->write($message);
     }
 
     /**
@@ -270,13 +279,12 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     public function endTest(\PHPUnit_Framework_Test $test, $time)
     {
-        $message = $this->getServiceMessage(
+        $this->writeServiceMessage(
             self::MESSAGE_TEST_FINISHED,
             $test,
             array(
                 'duration' => $time,
             )
         );
-        $this->write($message);
     }
 }
