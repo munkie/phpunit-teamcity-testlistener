@@ -25,7 +25,7 @@ class TestListenerTest extends \PHPUnit_Framework_TestCase
 
         // mock standard php functions output
         test::func('PHPUnit\TeamCity', 'date', '2015-05-28T16:14:12.17+0700');
-        test::func('PHPUnit\TeamCity', 'getmypid', '24107');
+        test::func('PHPUnit\TeamCity', 'getmypid', 24107);
     }
 
     protected function tearDown()
@@ -37,15 +37,23 @@ class TestListenerTest extends \PHPUnit_Framework_TestCase
 
     public function testAddError()
     {
-        $this->markTestIncomplete();
-
         $test = $this->createTestMock('UnitTest');
         $exception = new \Exception('ErrorMessage');
-        $time = 0;
+        $time = 5;
 
         $this->listener->addError($test, $exception, $time);
 
-        $this->assertOutputEquals('');
+        $expectedOutputStart = <<<EOS
+##teamcity[testFailed message='ErrorMessage' details='
+EOS;
+        $this->assertStringStartsWith($expectedOutputStart, $this->readOut());
+
+        $expectedOutputEnd = <<<EOS
+ name='UnitTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+
+EOS;
+
+        $this->assertStringEndsWith($expectedOutputEnd, $this->readOut());
     }
 
     public function testStartTest()
