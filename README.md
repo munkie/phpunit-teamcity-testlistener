@@ -1,5 +1,9 @@
 PHPUnit TeamCity TestListener
 ========================================
+[![Latest Stable Version](https://poser.pugx.org/munkie/phpunit-teamcity-testlistener/v/stable)](https://packagist.org/packages/munkie/phpunit-teamcity-testlistener)
+[![Total Downloads](https://poser.pugx.org/munkie/phpunit-teamcity-testlistener/downloads)](https://packagist.org/packages/munkie/phpunit-teamcity-testlistener)
+[![License](https://poser.pugx.org/munkie/phpunit-teamcity-testlistener/license)](https://packagist.org/packages/munkie/phpunit-teamcity-testlistener)
+[![Build Status](https://travis-ci.org/munkie/phpunit-teamcity-testlistener.svg)](https://travis-ci.org/munkie/phpunit-teamcity-testlistener)
 
 `PHPUnit TeamCity TestListener` is extension for integration [PHPUnit](http://phpunit.de) and [TeamCity](http://www.jetbrains.com/teamcity/) continious integration server. Based on PHPUnit's TestListener feature and TeamCity's Service Messages providing fast and easy test reporting during build process.
 
