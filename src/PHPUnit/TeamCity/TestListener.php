@@ -28,9 +28,9 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
         list($usec, $sec) = explode(' ', microtime());
         $msec = floor($usec * 1000);
         $params += array(
+            'name' => $this->getTestName($test),
             'timestamp' => date("Y-m-d\\TH:i:s.{$msec}O", $sec),
             'flowId' => $this->getFlowId($test),
-            'name' => $this->getTestName($test),
         );
         $message = "##teamcity[{$type}";
         foreach ($params as $name => $value) {

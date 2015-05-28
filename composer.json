@@ -4,6 +4,9 @@
     "require": {
         "phpunit/phpunit": ">=3.7,<5.0"
     },
+    "require-dev": {
+        "codeception/aspect-mock": "~0.5"
+    },
     "license": "MIT",
     "authors": [
         {
