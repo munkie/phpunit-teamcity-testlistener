@@ -12,6 +12,6 @@
         }
     ],
     "autoload": {
-        "files": ["src/TeamCity/TestListener.php"]
+        "files": ["src/PHPUnit/TeamCity/TestListener.php"]
     }
 }
