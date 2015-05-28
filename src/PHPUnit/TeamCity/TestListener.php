@@ -2,18 +2,7 @@
 
 namespace PHPUnit\TeamCity;
 
-use PHPUnit_Util_Printer;
-use PHPUnit_Framework_Test;
-use PHPUnit_Framework_TestListener;
-use PHPUnit_Framework_AssertionFailedError;
-use PHPUnit_Framework_TestCase;
-use PHPUnit_Framework_TestSuite;
-use PHPUnit_Framework_TestFailure;
-use PHPUnit_Framework_ExpectationFailedException;
-use PHPUnit_Framework_SelfDescribing;
-use Exception;
-
-class TestListener extends PHPUnit_Util_Printer implements PHPUnit_Framework_TestListener
+class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_TestListener
 {
     const MESSAGE_SUITE_STARTED = 'testSuiteStarted';
     const MESSAGE_TEST_STARTED = 'testStarted';
@@ -30,11 +19,11 @@ class TestListener extends PHPUnit_Util_Printer implements PHPUnit_Framework_Tes
 
     /**
      * @param string $type
-     * @param PHPUnit_Framework_Test $test
+     * @param \PHPUnit_Framework_Test $test
      * @param array $params
      * @return string
      */
-    protected function getServiceMessage($type, PHPUnit_Framework_Test $test, array $params = array())
+    protected function getServiceMessage($type, \PHPUnit_Framework_Test $test, array $params = array())
     {
         list($usec, $sec) = explode(' ', microtime());
         $msec = floor($usec * 1000);
@@ -52,12 +41,12 @@ class TestListener extends PHPUnit_Util_Printer implements PHPUnit_Framework_Tes
     }
 
     /**
-     * @param PHPUnit_Framework_Test $test
+     * @param \PHPUnit_Framework_Test $test
      * @return string
      */
-    protected function getTestName(PHPUnit_Framework_Test $test)
+    protected function getTestName(\PHPUnit_Framework_Test $test)
     {
-        if ($test instanceof PHPUnit_Framework_SelfDescribing) {
+        if ($test instanceof \PHPUnit_Framework_SelfDescribing) {
             $name = $test->toString();
         } else {
             $name = get_class($test);
@@ -79,10 +68,10 @@ class TestListener extends PHPUnit_Util_Printer implements PHPUnit_Framework_Tes
     }
 
     /**
-     * @param PHPUnit_Framework_Test $test
+     * @param \PHPUnit_Framework_Test $test
      * @return int
      */
-    protected function getFlowId(PHPUnit_Framework_Test $test)
+    protected function getFlowId(\PHPUnit_Framework_Test $test)
     {
         return getmypid();
     }
@@ -103,11 +92,11 @@ class TestListener extends PHPUnit_Util_Printer implements PHPUnit_Framework_Tes
     /**
      * An error occurred.
      *
-     * @param PHPUnit_Framework_Test $test
-     * @param Exception $e
+     * @param \PHPUnit_Framework_Test $test
+     * @param \Exception $e
      * @param float $time
      */
-    public function addError(PHPUnit_Framework_Test $test, Exception $e, $time)
+    public function addError(\PHPUnit_Framework_Test $test, \Exception $e, $time)
     {
         $message = $this->getServiceMessage(
             self::MESSAGE_TEST_FAILED,
@@ -123,15 +112,15 @@ class TestListener extends PHPUnit_Util_Printer implements PHPUnit_Framework_Tes
     /**
      * A failure occurred.
      *
-     * @param PHPUnit_Framework_Test|PHPUnit_Framework_TestCase $test
-     * @param PHPUnit_Framework_AssertionFailedError $e
+     * @param \PHPUnit_Framework_Test|\PHPUnit_Framework_TestCase $test
+     * @param \PHPUnit_Framework_AssertionFailedError $e
      * @param float $time
      */
-    public function addFailure(PHPUnit_Framework_Test $test, PHPUnit_Framework_AssertionFailedError $e, $time)
+    public function addFailure(\PHPUnit_Framework_Test $test, \PHPUnit_Framework_AssertionFailedError $e, $time)
     {
         $failures = array();
         $testResult = $test->getTestResultObject();
-        /* @var $failure PHPUnit_Framework_TestFailure */
+        /* @var $failure \PHPUnit_Framework_TestFailure */
         foreach ($testResult->failures() as $failure) {
             $hash = md5($e->getMessage() . ' ' . $e->getTraceAsString());
             if (isset($failures[$hash])) {
@@ -145,7 +134,7 @@ class TestListener extends PHPUnit_Util_Printer implements PHPUnit_Framework_Tes
             );
 
             $thrownException = $failure->thrownException();
-            if ($thrownException instanceof PHPUnit_Framework_ExpectationFailedException) {
+            if ($thrownException instanceof \PHPUnit_Framework_ExpectationFailedException) {
                 $comparisonFailure = $thrownException->getComparisonFailure();
                 if (null !== $comparisonFailure) {
                     $array += array(
@@ -164,11 +153,11 @@ class TestListener extends PHPUnit_Util_Printer implements PHPUnit_Framework_Tes
     /**
      * Incomplete test.
      *
-     * @param PHPUnit_Framework_Test $test
-     * @param Exception $e
+     * @param \PHPUnit_Framework_Test $test
+     * @param \Exception $e
      * @param float $time
      */
-    public function addIncompleteTest(PHPUnit_Framework_Test $test, Exception $e, $time)
+    public function addIncompleteTest(\PHPUnit_Framework_Test $test, \Exception $e, $time)
     {
         $message = $this->getServiceMessage(
             self::MESSAGE_TEST_IGNORED,
@@ -183,12 +172,12 @@ class TestListener extends PHPUnit_Util_Printer implements PHPUnit_Framework_Tes
     /**
      * Risky test.
      *
-     * @param PHPUnit_Framework_Test $test
-     * @param Exception $e
+     * @param \PHPUnit_Framework_Test $test
+     * @param \Exception $e
      * @param float $time
      * @since  Method available since Release 4.0.0
      */
-    public function addRiskyTest(PHPUnit_Framework_Test $test, Exception $e, $time)
+    public function addRiskyTest(\PHPUnit_Framework_Test $test, \Exception $e, $time)
     {
         $this->addIncompleteTest($test, $e, $time);
     }
@@ -196,11 +185,11 @@ class TestListener extends PHPUnit_Util_Printer implements PHPUnit_Framework_Tes
     /**
      * Skipped test.
      *
-     * @param PHPUnit_Framework_Test $test
-     * @param Exception $e
+     * @param \PHPUnit_Framework_Test $test
+     * @param \Exception $e
      * @param float $time
      */
-    public function addSkippedTest(PHPUnit_Framework_Test $test, Exception $e, $time)
+    public function addSkippedTest(\PHPUnit_Framework_Test $test, \Exception $e, $time)
     {
         $message = $this->getServiceMessage(
             self::MESSAGE_TEST_IGNORED,
@@ -215,9 +204,9 @@ class TestListener extends PHPUnit_Util_Printer implements PHPUnit_Framework_Tes
     /**
      * A test suite started.
      *
-     * @param PHPUnit_Framework_TestSuite $suite
+     * @param \PHPUnit_Framework_TestSuite $suite
      */
-    public function startTestSuite(PHPUnit_Framework_TestSuite $suite)
+    public function startTestSuite(\PHPUnit_Framework_TestSuite $suite)
     {
         $message = $this->getServiceMessage(
             self::MESSAGE_SUITE_STARTED,
@@ -229,9 +218,9 @@ class TestListener extends PHPUnit_Util_Printer implements PHPUnit_Framework_Tes
     /**
      * A test suite ended.
      *
-     * @param PHPUnit_Framework_TestSuite $suite
+     * @param \PHPUnit_Framework_TestSuite $suite
      */
-    public function endTestSuite(PHPUnit_Framework_TestSuite $suite)
+    public function endTestSuite(\PHPUnit_Framework_TestSuite $suite)
     {
         $message = $this->getServiceMessage(
             self::MESSAGE_SUITE_FINISHED,
@@ -243,9 +232,9 @@ class TestListener extends PHPUnit_Util_Printer implements PHPUnit_Framework_Tes
     /**
      * A test started.
      *
-     * @param PHPUnit_Framework_Test $test
+     * @param \PHPUnit_Framework_Test $test
      */
-    public function startTest(PHPUnit_Framework_Test $test)
+    public function startTest(\PHPUnit_Framework_Test $test)
     {
         $message = $this->getServiceMessage(
             self::MESSAGE_TEST_STARTED,
@@ -260,10 +249,10 @@ class TestListener extends PHPUnit_Util_Printer implements PHPUnit_Framework_Tes
     /**
      * A test ended.
      *
-     * @param PHPUnit_Framework_Test $test
+     * @param \PHPUnit_Framework_Test $test
      * @param float $time
      */
-    public function endTest(PHPUnit_Framework_Test $test, $time)
+    public function endTest(\PHPUnit_Framework_Test $test, $time)
     {
         $message = $this->getServiceMessage(
             self::MESSAGE_TEST_FINISHED,
