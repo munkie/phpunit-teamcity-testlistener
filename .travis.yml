@@ -10,4 +10,7 @@ before_script:
     - mkdir -p build/logs
 
 script:
-    - bin/phpunit --coverage-clover build/logs/clover.xml
+    - bin/phpunit --coverage-clover build/logs/clover.cov
+
+after_script:
+    - bin/ocular code-coverage:upload --format=php-clover build/logs/clover.cov
