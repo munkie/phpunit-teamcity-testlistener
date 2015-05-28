@@ -99,7 +99,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     protected function addSlashes($string)
     {
         return str_replace(
-            array("|", "'", "\n", "\r", "\u0085", "\u2028", "\u2029", "[","]"),
+            array("|", "'", "\n", "\r", "\u0085", "\u2028", "\u2029", "[", "]"),
             array("||", "|'", "|n", "|r", "|x", "|l", "|p", "|[", "|]"),
             $string
         );
