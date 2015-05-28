@@ -35,27 +35,6 @@ class TestListenerTest extends \PHPUnit_Framework_TestCase
         test::clean();
     }
 
-    public function testAddError()
-    {
-        $test = $this->createTestMock('UnitTest');
-        $exception = new \Exception('ErrorMessage');
-        $time = 5;
-
-        $this->listener->addError($test, $exception, $time);
-
-        $expectedOutputStart = <<<EOS
-##teamcity[testFailed message='ErrorMessage' details='
-EOS;
-        $this->assertStringStartsWith($expectedOutputStart, $this->readOut());
-
-        $expectedOutputEnd = <<<EOS
- name='UnitTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-
-EOS;
-
-        $this->assertStringEndsWith($expectedOutputEnd, $this->readOut());
-    }
-
     public function testStartTest()
     {
         $test = $this->createTestMock('UnitTest');
@@ -155,20 +134,46 @@ EOS;
         $this->assertOutputEquals($expected);
     }
 
+    public function testAddError()
+    {
+        $test = $this->createTestMock('UnitTest');
+        $exception = new \Exception('ErrorMessage');
+        $time = 5;
+
+        $this->listener->addError($test, $exception, $time);
+
+        $expectedOutputStart = <<<EOS
+##teamcity[testFailed message='ErrorMessage' details='
+EOS;
+        $this->assertStringStartsWith($expectedOutputStart, $this->readOut());
+
+        $expectedOutputEnd = <<<EOS
+ name='UnitTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+
+EOS;
+
+        $this->assertStringEndsWith($expectedOutputEnd, $this->readOut());
+    }
+
     public function testAddFailure()
     {
-        $this->markTestIncomplete();
         $test = $this->createTestMock('FailedTest');
         $exception = new \PHPUnit_Framework_AssertionFailedError('Assertion error');
         $time = 5;
 
         $this->listener->addFailure($test, $exception, $time);
-        $expected = <<<EOS
-##teamcity[testIgnored message='Ricky message' name='FailedTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+
+        $expectedOutputStart = <<<EOS
+##teamcity[testFailed message='Assertion error' details='
+EOS;
+        $this->assertStringStartsWith($expectedOutputStart, $this->readOut());
+
+        $expectedOutputEnd = <<<EOS
+ name='FailedTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
 
 EOS;
 
-        $this->assertOutputEquals($expected);
+        $this->assertStringEndsWith($expectedOutputEnd, $this->readOut());
     }
 
     /**

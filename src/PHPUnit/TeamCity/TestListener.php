@@ -5,12 +5,13 @@ namespace PHPUnit\TeamCity;
 class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_TestListener
 {
     const MESSAGE_SUITE_STARTED = 'testSuiteStarted';
+    const MESSAGE_SUITE_FINISHED = 'testSuiteFinished';
     const MESSAGE_TEST_STARTED = 'testStarted';
     const MESSAGE_TEST_FAILED = 'testFailed';
     const MESSAGE_TEST_IGNORED = 'testIgnored';
     const MESSAGE_TEST_FINISHED = 'testFinished';
+
     const MESSAGE_COMPARISON_FAILURE = 'comparisonFailure';
-    const MESSAGE_SUITE_FINISHED = 'testSuiteFinished';
 
     /**
      * @var string
@@ -118,6 +119,21 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     public function addFailure(\PHPUnit_Framework_Test $test, \PHPUnit_Framework_AssertionFailedError $e, $time)
     {
+        if ($test instanceof \PHPUnit_Framework_TestCase) {
+            $this->addTestCaseFailure($test, $e);
+        } else {
+            $this->addError($test, $e, $time);
+        }
+    }
+
+    /**
+     * Handle PHPUnit_Framework_TestCase failure
+     *
+     * @param \PHPUnit_Framework_TestCase $test
+     * @param \PHPUnit_Framework_AssertionFailedError $e
+     */
+    protected function addTestCaseFailure(\PHPUnit_Framework_TestCase $test, \PHPUnit_Framework_AssertionFailedError $e)
+    {
         $failures = array();
         $testResult = $test->getTestResultObject();
         /* @var $failure \PHPUnit_Framework_TestFailure */
@@ -127,24 +143,24 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
                 continue;
             }
 
-            $array = array(
-                'type'     => self::MESSAGE_COMPARISON_FAILURE,
-                'message'  => $e->getMessage(),
-                'details'  => $e->getTraceAsString(),
+            $params = array(
+                'type' => self::MESSAGE_COMPARISON_FAILURE,
+                'message' => $e->getMessage(),
+                'details' => $e->getTraceAsString(),
             );
 
             $thrownException = $failure->thrownException();
             if ($thrownException instanceof \PHPUnit_Framework_ExpectationFailedException) {
                 $comparisonFailure = $thrownException->getComparisonFailure();
                 if (null !== $comparisonFailure) {
-                    $array += array(
+                    $params += array(
                         'expected' => $comparisonFailure->getExpectedAsString(),
                         'actual' => $comparisonFailure->getActualAsString(),
                     );
                 }
             }
 
-            $message = $this->getServiceMessage(self::MESSAGE_TEST_FAILED, $test, $array);
+            $message = $this->getServiceMessage(self::MESSAGE_TEST_FAILED, $test, $params);
             $this->write($message);
             $failures[$hash] = true;
         }
