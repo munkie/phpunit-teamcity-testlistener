@@ -71,8 +71,12 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     }
 
     /**
-     * @param string $name
-     * @return string
+     * Convert test class to java like packages style
+     *
+     * @link https://confluence.jetbrains.com/display/TCD9/Build+Script+Interaction+with+TeamCity#BuildScriptInteractionwithTeamCity-Interpretingtestnames
+     *
+     * @param string $name Test name usualy class
+     * @return string formatted class name
      */
     protected function formatName($name)
     {

@@ -293,6 +293,9 @@ EOS;
         $this->assertEquals($expectedOutput, $this->readOut(), $message);
     }
 
+    /**
+     * @return string
+     */
     private function readOut()
     {
         return stream_get_contents($this->out, -1, 0);
