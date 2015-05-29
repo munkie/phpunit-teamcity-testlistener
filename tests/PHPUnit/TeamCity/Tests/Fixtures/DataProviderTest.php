@@ -11,7 +11,7 @@ class DataProviderTest extends \PHPUnit_Framework_TestCase
      */
     public function testMethodWithDataProvider($param)
     {
-        $this->assertTrue(true);
+        $this->assertNotNull($param);
     }
 
     public function testSimpleMethod()

@@ -3,7 +3,7 @@
 namespace PHPUnit\TeamCity\Tests;
 
 use PHPUnit\TeamCity\TestListener;
-use AspectMock\Test as test;
+use AspectMock;
 use PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest;
 use SebastianBergmann\Comparator\ComparisonFailure;
 
@@ -26,15 +26,15 @@ class TestListenerTest extends \PHPUnit_Framework_TestCase
         $this->listener = new TestListener($this->out);
 
         // mock standard php functions output
-        test::func('PHPUnit\TeamCity', 'date', '2015-05-28T16:14:12.17+0700');
-        test::func('PHPUnit\TeamCity', 'getmypid', 24107);
+        AspectMock\Test::func('PHPUnit\TeamCity', 'date', '2015-05-28T16:14:12.17+0700');
+        AspectMock\Test::func('PHPUnit\TeamCity', 'getmypid', 24107);
     }
 
     protected function tearDown()
     {
         fclose($this->out);
         $this->listener = null;
-        test::clean();
+        AspectMock\Test::clean();
     }
 
     public function testStartTest()
