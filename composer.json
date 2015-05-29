@@ -4,6 +4,10 @@
     "require": {
         "phpunit/phpunit": ">=3.7,<5.0"
     },
+    "require-dev": {
+        "codeception/aspect-mock": "~0.5",
+        "scrutinizer/ocular": "~1.0"
+    },
     "license": "MIT",
     "authors": [
         {
@@ -12,6 +16,9 @@
         }
     ],
     "autoload": {
-        "files": ["src/TeamCity/TestListener.php"]
+        "files": ["src/PHPUnit/TeamCity/TestListener.php"]
+    },
+    "config": {
+        "bin-dir": "bin"
     }
 }
