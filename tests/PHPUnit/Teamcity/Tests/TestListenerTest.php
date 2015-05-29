@@ -4,6 +4,7 @@ namespace PHPUnit\TeamCity\Tests;
 
 use PHPUnit\TeamCity\TestListener;
 use AspectMock\Test as test;
+use PHPUnit\Teamcity\Tests\Fixture\TestWithDataProvider;
 use SebastianBergmann\Comparator\ComparisonFailure;
 
 class TestListenerTest extends \PHPUnit_Framework_TestCase
@@ -217,6 +218,59 @@ EOS;
 EOS;
 
         $this->assertStringEndsWith($expectedOutputEnd, $message);
+    }
+
+    public function testMessageNameForTestWithDataProvider()
+    {
+        $theClass = new \ReflectionClass('\PHPUnit\Teamcity\Tests\Fixture\TestWithDataProvider');
+        $testSuite = new \PHPUnit_Framework_TestSuite($theClass);
+
+        $tests = $testSuite->tests();
+
+        $this->assertArrayHasKey(0, $tests);
+        $this->assertInstanceOf('PHPUnit_Framework_TestSuite_DataProvider', $tests[0]);
+        /* @var \PHPUnit_Framework_TestSuite_DataProvider $dataProviderTestSuite */
+        $dataProviderTestSuite = $tests[0];
+
+        $this->assertArrayHasKey(1, $tests);
+        $this->assertInstanceOf('\PHPUnit\Teamcity\Tests\Fixture\TestWithDataProvider', $tests[1]);
+        /* @var TestWithDataProvider $simpleMethodTest*/
+        $simpleMethodTest = $tests[1];
+
+        $this->listener->startTestSuite($testSuite);
+        $this->listener->startTestSuite($dataProviderTestSuite);
+
+        foreach ($dataProviderTestSuite as $test) {
+            $this->listener->startTest($test);
+            $this->listener->endTest($test, 5);
+        }
+
+        $this->listener->endTestSuite($dataProviderTestSuite);
+
+        $this->listener->startTest($simpleMethodTest);
+        $this->listener->endTest($simpleMethodTest, 6);
+
+        $this->listener->endTestSuite($testSuite);
+
+        $expectedOutput = <<<EOS
+##teamcity[testSuiteStarted name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testSuiteStarted name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "one" (|'data #1|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "one" (|'data #1|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "two" (|'data #2|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "two" (|'data #2|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "three" (|'data_with_dots|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "three" (|'data_with_dots|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "four" (|'.u0085|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "four" (|'.u0085|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testSuiteFinished name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testSimpleMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='6' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testSimpleMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testSuiteFinished name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+
+EOS;
+
+        $this->assertOutputEquals($expectedOutput);
     }
 
     /**

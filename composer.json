@@ -16,7 +16,10 @@
         }
     ],
     "autoload": {
-        "files": ["src/PHPUnit/TeamCity/TestListener.php"]
+        "files": ["src/PHPUnit/TeamCity/TestListener.php"],
+        "psr-4": {
+            "PHPUnit\\Teamcity\\Tests\\": "tests/PHPUnit/Teamcity/Tests"
+        }
     },
     "config": {
         "bin-dir": "bin"
