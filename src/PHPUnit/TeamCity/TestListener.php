@@ -62,29 +62,16 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     protected function getTestName(\PHPUnit_Framework_Test $test)
     {
-        if ($test instanceof \PHPUnit_Framework_SelfDescribing) {
+        if ($test instanceof \PHPUnit_Framework_TestCase) {
+            $name = $test->getName();
+        } elseif ($test instanceof \PHPUnit_Framework_TestSuite) {
+            $name = $test->getName();
+        } elseif ($test instanceof \PHPUnit_Framework_SelfDescribing) {
             $name = $test->toString();
         } else {
             $name = get_class($test);
         }
-        return $this->formatName($name);
-    }
-
-    /**
-     * Convert test class to java like packages style
-     *
-     * @link https://confluence.jetbrains.com/display/TCD9/Build+Script+Interaction+with+TeamCity#BuildScriptInteractionwithTeamCity-Interpretingtestnames
-     *
-     * @param string $name Test name usualy class
-     * @return string formatted class name
-     */
-    protected function formatName($name)
-    {
-        return str_replace(
-            array('.', '\\', '::', ' with data set', ':'),
-            array('_', '.', '.', '.with data set', '_'),
-            $name
-        );
+        return $name;
     }
 
     /**
@@ -285,7 +272,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      * A test ended.
      *
      * @param \PHPUnit_Framework_Test $test
-     * @param float $time
+     * @param float $time seconds
      */
     public function endTest(\PHPUnit_Framework_Test $test, $time)
     {
@@ -293,7 +280,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
             self::MESSAGE_TEST_FINISHED,
             $test,
             array(
-                'duration' => $time,
+                'duration' => floor($time * 1000),
             )
         );
     }

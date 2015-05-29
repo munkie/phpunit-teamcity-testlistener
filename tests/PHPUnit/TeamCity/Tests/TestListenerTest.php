@@ -54,11 +54,11 @@ EOS;
     {
         $test = $this->createTestMock('UnitTest');
 
-        $time = 5;
+        $time = 5.6712;
 
         $this->listener->endTest($test, $time);
         $expected = <<<EOS
-##teamcity[testFinished duration='5' name='UnitTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5671' name='UnitTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
 
 EOS;
 
@@ -213,7 +213,7 @@ EOS;
 
 
         $expectedOutputEnd = <<<EOS
- expected='expectedAsString' actual='actualAsString' name='TestCase.testMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+ expected='expectedAsString' actual='actualAsString' name='testMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
 
 EOS;
 
@@ -253,20 +253,22 @@ EOS;
         $this->listener->endTestSuite($testSuite);
 
         $expectedOutput = <<<EOS
-##teamcity[testSuiteStarted name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testSuiteStarted name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "one" (|'data #1|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testFinished duration='5' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "one" (|'data #1|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "two" (|'data #2|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testFinished duration='5' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "two" (|'data #2|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "three" (|'data_with_dots|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testFinished duration='5' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "three" (|'data_with_dots|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "four" (|'.u0085|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testFinished duration='5' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "four" (|'.u0085|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testSuiteFinished name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testSimpleMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testFinished duration='6' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testSimpleMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testSuiteFinished name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testSuiteStarted name='PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testSuiteStarted name='PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest::testMethodWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='testMethodWithDataProvider with data set "one"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5000' name='testMethodWithDataProvider with data set "one"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='testMethodWithDataProvider with data set "two"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5000' name='testMethodWithDataProvider with data set "two"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='testMethodWithDataProvider with data set "three"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5000' name='testMethodWithDataProvider with data set "three"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='testMethodWithDataProvider with data set "four"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5000' name='testMethodWithDataProvider with data set "four"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='testMethodWithDataProvider with data set "five.one"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5000' name='testMethodWithDataProvider with data set "five.one"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testSuiteFinished name='PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest::testMethodWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='testSimpleMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='6000' name='testSimpleMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testSuiteFinished name='PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
 
 EOS;
 
