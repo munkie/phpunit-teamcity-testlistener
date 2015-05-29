@@ -18,7 +18,7 @@
     "autoload": {
         "files": ["src/PHPUnit/TeamCity/TestListener.php"],
         "psr-4": {
-            "PHPUnit\\Teamcity\\Tests\\": "tests/PHPUnit/Teamcity/Tests"
+            "PHPUnit\\TeamCity\\Tests\\": "tests/PHPUnit/TeamCity/Tests"
         }
     },
     "config": {

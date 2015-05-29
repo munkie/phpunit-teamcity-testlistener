@@ -8,9 +8,8 @@
          backupGlobals="false"
          colors="true">
     <testsuites>
-        <testsuite name="Default">
-            <directory>./tests</directory>
-            <exclude>./tests/PHPUnit/TeamCity/Tests/Fixtures</exclude>
+        <testsuite name="Fixtures">
+            <directory>./tests/PHPUnit/TeamCity/Tests/Fixtures</directory>
         </testsuite>
     </testsuites>
 

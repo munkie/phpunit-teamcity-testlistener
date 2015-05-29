@@ -4,7 +4,7 @@ namespace PHPUnit\TeamCity\Tests;
 
 use PHPUnit\TeamCity\TestListener;
 use AspectMock\Test as test;
-use PHPUnit\Teamcity\Tests\Fixture\TestWithDataProvider;
+use PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest;
 use SebastianBergmann\Comparator\ComparisonFailure;
 
 class TestListenerTest extends \PHPUnit_Framework_TestCase
@@ -222,7 +222,7 @@ EOS;
 
     public function testMessageNameForTestWithDataProvider()
     {
-        $theClass = new \ReflectionClass('\PHPUnit\Teamcity\Tests\Fixture\TestWithDataProvider');
+        $theClass = new \ReflectionClass('\PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest');
         $testSuite = new \PHPUnit_Framework_TestSuite($theClass);
 
         $tests = $testSuite->tests();
@@ -233,8 +233,8 @@ EOS;
         $dataProviderTestSuite = $tests[0];
 
         $this->assertArrayHasKey(1, $tests);
-        $this->assertInstanceOf('\PHPUnit\Teamcity\Tests\Fixture\TestWithDataProvider', $tests[1]);
-        /* @var TestWithDataProvider $simpleMethodTest*/
+        $this->assertInstanceOf('\PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest', $tests[1]);
+        /* @var DataProviderTest $simpleMethodTest*/
         $simpleMethodTest = $tests[1];
 
         $this->listener->startTestSuite($testSuite);
@@ -253,20 +253,20 @@ EOS;
         $this->listener->endTestSuite($testSuite);
 
         $expectedOutput = <<<EOS
-##teamcity[testSuiteStarted name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testSuiteStarted name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "one" (|'data #1|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testFinished duration='5' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "one" (|'data #1|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "two" (|'data #2|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testFinished duration='5' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "two" (|'data #2|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "three" (|'data_with_dots|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testFinished duration='5' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "three" (|'data_with_dots|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "four" (|'.u0085|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testFinished duration='5' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider.with data set "four" (|'.u0085|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testSuiteFinished name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testMethodWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testSimpleMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testFinished duration='6' name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider.testSimpleMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-##teamcity[testSuiteFinished name='PHPUnit.Teamcity.Tests.Fixture.TestWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testSuiteStarted name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testSuiteStarted name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "one" (|'data #1|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "one" (|'data #1|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "two" (|'data #2|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "two" (|'data #2|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "three" (|'data_with_dots|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "three" (|'data_with_dots|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "four" (|'.u0085|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider.with data set "four" (|'.u0085|')' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testSuiteFinished name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testMethodWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testSimpleMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='6' name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest.testSimpleMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testSuiteFinished name='PHPUnit.TeamCity.Tests.Fixtures.DataProviderTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
 
 EOS;
 

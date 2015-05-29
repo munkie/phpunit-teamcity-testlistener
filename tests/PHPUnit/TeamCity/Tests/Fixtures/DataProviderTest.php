@@ -1,8 +1,8 @@
 <?php
 
-namespace PHPUnit\Teamcity\Tests\Fixture;
+namespace PHPUnit\TeamCity\Tests\Fixtures;
 
-class TestWithDataProvider extends \PHPUnit_Framework_TestCase
+class DataProviderTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @dataProvider dataProviderWithKeys
@@ -11,12 +11,12 @@ class TestWithDataProvider extends \PHPUnit_Framework_TestCase
      */
     public function testMethodWithDataProvider($param)
     {
-
+        $this->assertTrue(true);
     }
 
     public function testSimpleMethod()
     {
-
+        $this->assertTrue(true);
     }
 
     /**
