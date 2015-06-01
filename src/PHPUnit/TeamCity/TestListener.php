@@ -50,7 +50,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
         );
         $message = "##teamcity[{$type}";
         foreach ($params as $name => $value) {
-            $message .= ' ' . $name . '=\'' . $this->addSlashes($value) . '\'';
+            $message .= ' ' . $name . '=\'' . $this->escapeValue($value) . '\'';
         }
         $message .= "]" . PHP_EOL;
         return $message;
@@ -62,25 +62,16 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     protected function getTestName(\PHPUnit_Framework_Test $test)
     {
-        if ($test instanceof \PHPUnit_Framework_SelfDescribing) {
+        if ($test instanceof \PHPUnit_Framework_TestCase) {
+            $name = $test->getName();
+        } elseif ($test instanceof \PHPUnit_Framework_TestSuite) {
+            $name = $test->getName();
+        } elseif ($test instanceof \PHPUnit_Framework_SelfDescribing) {
             $name = $test->toString();
         } else {
             $name = get_class($test);
         }
-        return $this->formatName($name);
-    }
-
-    /**
-     * @param string $name
-     * @return string
-     */
-    protected function formatName($name)
-    {
-        return str_replace(
-            array('.', '\\', '::', ' with data set', ':'),
-            array('_', '.', '.', '.with data set', '_'),
-            $name
-        );
+        return $name;
     }
 
     /**
@@ -96,12 +87,18 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      * @param string $string
      * @return string
      */
-    protected function addSlashes($string)
+    protected function escapeValue($string)
     {
-        return str_replace(
-            array("|", "'", "\n", "\r", "\u0085", "\u2028", "\u2029", "[", "]"),
-            array("||", "|'", "|n", "|r", "|x", "|l", "|p", "|[", "|]"),
-            $string
+        return strtr(
+            $string,
+            array(
+                "|"  => "||",
+                "'"  => "|'",
+                "\n" => "|n",
+                "\r" => "|r",
+                "["  => "|[",
+                "]"  => "|]"
+            )
         );
     }
 
@@ -275,7 +272,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      * A test ended.
      *
      * @param \PHPUnit_Framework_Test $test
-     * @param float $time
+     * @param float $time seconds
      */
     public function endTest(\PHPUnit_Framework_Test $test, $time)
     {
@@ -283,7 +280,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
             self::MESSAGE_TEST_FINISHED,
             $test,
             array(
-                'duration' => $time,
+                'duration' => floor($time * 1000),
             )
         );
     }

@@ -8,9 +8,9 @@
          backupGlobals="false"
          colors="true">
     <testsuites>
-        <testsuite name="Default">
-            <directory>./tests</directory>
-            <exclude>./tests/PHPUnit/TeamCity/Tests/Fixtures</exclude>
+        <testsuite name="Fixtures">
+            <directory suffix="Test.php">./tests/PHPUnit/TeamCity/Tests/Fixtures</directory>
+            <directory suffix=".phpt">./tests/PHPUnit/TeamCity/Tests/Fixtures</directory>
         </testsuite>
     </testsuites>
 

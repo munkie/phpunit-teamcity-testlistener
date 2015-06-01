@@ -3,7 +3,8 @@
 namespace PHPUnit\TeamCity\Tests;
 
 use PHPUnit\TeamCity\TestListener;
-use AspectMock\Test as test;
+use AspectMock;
+use PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest;
 use SebastianBergmann\Comparator\ComparisonFailure;
 
 class TestListenerTest extends \PHPUnit_Framework_TestCase
@@ -25,15 +26,15 @@ class TestListenerTest extends \PHPUnit_Framework_TestCase
         $this->listener = new TestListener($this->out);
 
         // mock standard php functions output
-        test::func('PHPUnit\TeamCity', 'date', '2015-05-28T16:14:12.17+0700');
-        test::func('PHPUnit\TeamCity', 'getmypid', 24107);
+        AspectMock\Test::func('PHPUnit\TeamCity', 'date', '2015-05-28T16:14:12.17+0700');
+        AspectMock\Test::func('PHPUnit\TeamCity', 'getmypid', 24107);
     }
 
     protected function tearDown()
     {
         fclose($this->out);
         $this->listener = null;
-        test::clean();
+        AspectMock\Test::clean();
     }
 
     public function testStartTest()
@@ -53,11 +54,11 @@ EOS;
     {
         $test = $this->createTestMock('UnitTest');
 
-        $time = 5;
+        $time = 5.6712;
 
         $this->listener->endTest($test, $time);
         $expected = <<<EOS
-##teamcity[testFinished duration='5' name='UnitTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5671' name='UnitTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
 
 EOS;
 
@@ -212,11 +213,77 @@ EOS;
 
 
         $expectedOutputEnd = <<<EOS
- expected='expectedAsString' actual='actualAsString' name='TestCase.testMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+ expected='expectedAsString' actual='actualAsString' name='testMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
 
 EOS;
 
         $this->assertStringEndsWith($expectedOutputEnd, $message);
+    }
+
+    public function testMessageNameForTestWithDataProvider()
+    {
+        $theClass = new \ReflectionClass('\PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest');
+        $testSuite = new \PHPUnit_Framework_TestSuite($theClass);
+
+        $tests = $testSuite->tests();
+
+        $this->assertArrayHasKey(0, $tests);
+        $this->assertInstanceOf('PHPUnit_Framework_TestSuite_DataProvider', $tests[0]);
+        /* @var \PHPUnit_Framework_TestSuite_DataProvider $dataProviderTestSuite */
+        $dataProviderTestSuite = $tests[0];
+
+        $this->assertArrayHasKey(1, $tests);
+        $this->assertInstanceOf('\PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest', $tests[1]);
+        /* @var DataProviderTest $simpleMethodTest*/
+        $simpleMethodTest = $tests[1];
+
+        $this->listener->startTestSuite($testSuite);
+        $this->listener->startTestSuite($dataProviderTestSuite);
+
+        foreach ($dataProviderTestSuite as $test) {
+            $this->listener->startTest($test);
+            $this->listener->endTest($test, 5);
+        }
+
+        $this->listener->endTestSuite($dataProviderTestSuite);
+
+        $this->listener->startTest($simpleMethodTest);
+        $this->listener->endTest($simpleMethodTest, 6);
+
+        $this->listener->endTestSuite($testSuite);
+
+        $expectedOutput = <<<EOS
+##teamcity[testSuiteStarted name='PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testSuiteStarted name='PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest::testMethodWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='testMethodWithDataProvider with data set "one"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5000' name='testMethodWithDataProvider with data set "one"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='testMethodWithDataProvider with data set "two"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5000' name='testMethodWithDataProvider with data set "two"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='testMethodWithDataProvider with data set "three"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5000' name='testMethodWithDataProvider with data set "three"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='testMethodWithDataProvider with data set "four"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5000' name='testMethodWithDataProvider with data set "four"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='testMethodWithDataProvider with data set "five.one"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='5000' name='testMethodWithDataProvider with data set "five.one"' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testSuiteFinished name='PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest::testMethodWithDataProvider' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testStarted captureStandardOutput='true' name='testSimpleMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testFinished duration='6000' name='testSimpleMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+##teamcity[testSuiteFinished name='PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+
+EOS;
+
+        $this->assertOutputEquals($expectedOutput);
+    }
+
+    public function testMethodNameForSelfDescribingTest()
+    {
+        $filename = __DIR__ . '/Fixtures/example.phpt';
+        $test = new \PHPUnit_Extensions_PhptTestCase($filename);
+
+        $this->listener->startTest($test);
+
+        $expectedPrefix = "##teamcity[testStarted captureStandardOutput='true' name='$filename' timestamp='";
+        $this->assertStringStartsWith($expectedPrefix, $this->readOut());
     }
 
     /**
@@ -239,6 +306,9 @@ EOS;
         $this->assertEquals($expectedOutput, $this->readOut(), $message);
     }
 
+    /**
+     * @return string
+     */
     private function readOut()
     {
         return stream_get_contents($this->out, -1, 0);
