@@ -275,6 +275,17 @@ EOS;
         $this->assertOutputEquals($expectedOutput);
     }
 
+    public function testMethodNameForSelfDescribingTest()
+    {
+        $filename = __DIR__ . '/Fixtures/example.phpt';
+        $test = new \PHPUnit_Extensions_PhptTestCase($filename);
+
+        $this->listener->startTest($test);
+
+        $expectedPrefix = "##teamcity[testStarted captureStandardOutput='true' name='$filename' timestamp='";
+        $this->assertStringStartsWith($expectedPrefix, $this->readOut());
+    }
+
     /**
      * @param string $className
      * @return \PHPUnit_Framework_MockObject_MockObject|\PHPUnit_Framework_Test
