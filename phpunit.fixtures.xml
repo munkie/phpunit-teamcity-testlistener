@@ -9,7 +9,8 @@
          colors="true">
     <testsuites>
         <testsuite name="Fixtures">
-            <directory>./tests/PHPUnit/TeamCity/Tests/Fixtures</directory>
+            <directory suffix="Test.php">./tests/PHPUnit/TeamCity/Tests/Fixtures</directory>
+            <directory suffix=".phpt">./tests/PHPUnit/TeamCity/Tests/Fixtures</directory>
         </testsuite>
     </testsuites>
 
