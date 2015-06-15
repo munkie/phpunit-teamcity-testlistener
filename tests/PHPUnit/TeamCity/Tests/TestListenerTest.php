@@ -207,13 +207,13 @@ EOS;
         $message = $this->readOut();
 
         $expectedOutputStart = <<<EOS
-##teamcity[testFailed type='comparisonFailure' message='Assertion error' details=
+##teamcity[testFailed message='Assertion error' details=
 EOS;
         $this->assertStringStartsWith($expectedOutputStart, $message);
 
 
         $expectedOutputEnd = <<<EOS
- expected='expectedAsString' actual='actualAsString' name='testMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+ type='comparisonFailure' expected='expectedAsString' actual='actualAsString' name='testMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
 
 EOS;
 

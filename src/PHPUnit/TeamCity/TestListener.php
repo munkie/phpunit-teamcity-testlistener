@@ -103,6 +103,15 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     }
 
     /**
+     * @param \Exception $e
+     * @return string
+     */
+    protected function getExceptionDetails(\Exception $e)
+    {
+        return \PHPUnit_Framework_TestFailure::exceptionToString($e) . \PHPUnit_Util_Filter::getFilteredStacktrace($e);
+    }
+
+    /**
      * An error occurred.
      *
      * @param \PHPUnit_Framework_Test $test
@@ -116,7 +125,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
             $test,
             array(
                 'message' => $e->getMessage(),
-                'details' => $e->getTraceAsString(),
+                'details' => $this->getExceptionDetails($e),
             )
         );
     }
@@ -155,9 +164,8 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
             }
 
             $params = array(
-                'type' => self::MESSAGE_COMPARISON_FAILURE,
                 'message' => $e->getMessage(),
-                'details' => $e->getTraceAsString(),
+                'details' => $this->getExceptionDetails($e)
             );
 
             $thrownException = $failure->thrownException();
@@ -165,6 +173,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
                 $comparisonFailure = $thrownException->getComparisonFailure();
                 if (null !== $comparisonFailure) {
                     $params += array(
+                        'type' => self::MESSAGE_COMPARISON_FAILURE,
                         'expected' => $comparisonFailure->getExpectedAsString(),
                         'actual' => $comparisonFailure->getActualAsString()
                     );
