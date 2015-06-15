@@ -145,7 +145,7 @@ EOS;
         $this->listener->addError($test, $exception, $time);
 
         $expectedOutputStart = <<<EOS
-##teamcity[testFailed message='ErrorMessage' details='
+##teamcity[testFailed message='Exception: ErrorMessage' details='
 EOS;
         $this->assertStringStartsWith($expectedOutputStart, $this->readOut());
 
@@ -178,7 +178,7 @@ EOS;
         $this->assertStringEndsWith($expectedOutputEnd, $this->readOut());
     }
 
-    public function testAddFailureTestCase()
+    public function testAddFailureWithComparisonFailure()
     {
         /* @var \PHPUnit_Framework_TestCase $testCaseMock */
         $testCaseMock = $this->getMockForAbstractClass('\PHPUnit_Framework_TestCase', array('testMethod'), 'TestCase');
@@ -192,14 +192,13 @@ EOS;
             'actualAsString'
         );
 
-        $thrownException = new \PHPUnit_Framework_ExpectationFailedException('ExpectationFailed', $comparisonFailure);
+        $exception = new \PHPUnit_Framework_ExpectationFailedException('ExpectationFailed', $comparisonFailure);
         $result = new \PHPUnit_Framework_TestResult();
-        $result->addFailure($test, $thrownException, 2);
-        $result->addFailure($test, $thrownException, 3);
+        $result->addFailure($test, $exception, 2);
+        $result->addFailure($test, $exception, 3);
 
         $testCaseMock->setTestResultObject($result);
 
-        $exception = new \PHPUnit_Framework_AssertionFailedError('Assertion error');
         $time = 5;
 
         $this->listener->addFailure($testCaseMock, $exception, $time);
@@ -207,17 +206,33 @@ EOS;
         $message = $this->readOut();
 
         $expectedOutputStart = <<<EOS
-##teamcity[testFailed type='comparisonFailure' message='Assertion error' details=
+##teamcity[testFailed message='ExpectationFailed|n--- Expected|n+++ Actual|n@@ @@|n-expectedAsString|n+actualAsString' details=
 EOS;
         $this->assertStringStartsWith($expectedOutputStart, $message);
 
 
         $expectedOutputEnd = <<<EOS
- expected='expectedAsString' actual='actualAsString' name='testMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+ type='comparisonFailure' expected='expectedAsString' actual='actualAsString' name='testMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
 
 EOS;
 
         $this->assertStringEndsWith($expectedOutputEnd, $message);
+    }
+
+    public function testTrailingSpacesAreRemovedFromMessage()
+    {
+        $exception = new \RuntimeException("\n\nError\nwith newlines\n");
+
+        $test = $this->createTestMock('ErrorTest');
+        
+        $this->listener->addError($test, $exception, 5);
+
+        $message = $this->readOut();
+
+        $expectedOutputStart = <<<EOS
+##teamcity[testFailed message='RuntimeException: |n|nError|nwith newlines' details=
+EOS;
+        $this->assertStringStartsWith($expectedOutputStart, $message);
     }
 
     public function testMessageNameForTestWithDataProvider()

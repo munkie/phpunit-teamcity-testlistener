@@ -89,6 +89,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     protected function escapeValue($string)
     {
+        $string = trim($string);
         return strtr(
             $string,
             array(
@@ -111,13 +112,26 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     public function addError(\PHPUnit_Framework_Test $test, \Exception $e, $time)
     {
+        $params = array(
+            'message' => \PHPUnit_Framework_TestFailure::exceptionToString($e),
+            'details' => \PHPUnit_Util_Filter::getFilteredStacktrace($e),
+        );
+
+        if ($e instanceof \PHPUnit_Framework_ExpectationFailedException) {
+            $comparisonFailure = $e->getComparisonFailure();
+            if (null !== $comparisonFailure) {
+                $params += array(
+                    'type' => self::MESSAGE_COMPARISON_FAILURE,
+                    'expected' => $comparisonFailure->getExpectedAsString(),
+                    'actual' => $comparisonFailure->getActualAsString()
+                );
+            }
+        }
+
         $this->writeServiceMessage(
             self::MESSAGE_TEST_FAILED,
             $test,
-            array(
-                'message' => $e->getMessage(),
-                'details' => $e->getTraceAsString(),
-            )
+            $params
         );
     }
 
@@ -130,51 +144,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     public function addFailure(\PHPUnit_Framework_Test $test, \PHPUnit_Framework_AssertionFailedError $e, $time)
     {
-        if ($test instanceof \PHPUnit_Framework_TestCase) {
-            $this->addTestCaseFailure($test, $e);
-        } else {
-            $this->addError($test, $e, $time);
-        }
-    }
-
-    /**
-     * Handle PHPUnit_Framework_TestCase failure
-     *
-     * @param \PHPUnit_Framework_TestCase $test
-     * @param \PHPUnit_Framework_AssertionFailedError $e
-     */
-    protected function addTestCaseFailure(\PHPUnit_Framework_TestCase $test, \PHPUnit_Framework_AssertionFailedError $e)
-    {
-        $failures = array();
-        $testResult = $test->getTestResultObject();
-        /* @var $failure \PHPUnit_Framework_TestFailure */
-        foreach ($testResult->failures() as $failure) {
-            $hash = md5($e->getMessage() . ' ' . $e->getTraceAsString());
-            if (isset($failures[$hash])) {
-                continue;
-            }
-
-            $params = array(
-                'type' => self::MESSAGE_COMPARISON_FAILURE,
-                'message' => $e->getMessage(),
-                'details' => $e->getTraceAsString(),
-            );
-
-            $thrownException = $failure->thrownException();
-            if ($thrownException instanceof \PHPUnit_Framework_ExpectationFailedException) {
-                $comparisonFailure = $thrownException->getComparisonFailure();
-                if (null !== $comparisonFailure) {
-                    $params += array(
-                        'expected' => $comparisonFailure->getExpectedAsString(),
-                        'actual' => $comparisonFailure->getActualAsString()
-                    );
-                }
-            }
-
-            $this->writeServiceMessage(self::MESSAGE_TEST_FAILED, $test, $params);
-
-            $failures[$hash] = true;
-        }
+        $this->addError($test, $e, $time);
     }
 
     /**
