@@ -219,6 +219,22 @@ EOS;
         $this->assertStringEndsWith($expectedOutputEnd, $message);
     }
 
+    public function testTrailingSpacesAreRemovedFromMessage()
+    {
+        $exception = new \RuntimeException("\n\nError\nwith newlines\n");
+
+        $test = $this->createTestMock('ErrorTest');
+        
+        $this->listener->addError($test, $exception, 5);
+
+        $message = $this->readOut();
+
+        $expectedOutputStart = <<<EOS
+##teamcity[testFailed message='RuntimeException: |n|nError|nwith newlines' details=
+EOS;
+        $this->assertStringStartsWith($expectedOutputStart, $message);
+    }
+
     public function testMessageNameForTestWithDataProvider()
     {
         $theClass = new \ReflectionClass('\PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest');

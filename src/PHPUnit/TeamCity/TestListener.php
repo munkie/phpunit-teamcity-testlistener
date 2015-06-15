@@ -89,6 +89,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     protected function escapeValue($string)
     {
+        $string = trim($string);
         return strtr(
             $string,
             array(
@@ -112,7 +113,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     public function addError(\PHPUnit_Framework_Test $test, \Exception $e, $time)
     {
         $params = array(
-            'message' => trim(\PHPUnit_Framework_TestFailure::exceptionToString($e)),
+            'message' => \PHPUnit_Framework_TestFailure::exceptionToString($e),
             'details' => \PHPUnit_Util_Filter::getFilteredStacktrace($e),
         );
 
