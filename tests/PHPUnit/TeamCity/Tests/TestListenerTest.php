@@ -185,12 +185,28 @@ EOS;
 
         $test = $this->createTestMock('FailedTest');
 
-        $comparisonFailure = new ComparisonFailure(
-            'expected',
-            'actual',
-            'expectedAsString',
-            'actualAsString'
-        );
+        $expected = 'expected';
+        $actual = 'actual';
+        $expectedAsString = 'expectedAsString';
+        $actualAsString = 'actualAsString';
+
+        // PHPUnit versions <4.1 ComparisonFailure was part of phpunit
+        if (class_exists('PHPUnit_Framework_ComparisonFailure')) {
+            $comparisonFailure = new \PHPUnit_Framework_ComparisonFailure(
+                $expected,
+                $actual,
+                $expectedAsString,
+                $actualAsString
+            );
+        // PHPUnit versions >=4.1 ComparisonFailure was moved to sebastianbergmann/comparator package
+        } else {
+            $comparisonFailure = new ComparisonFailure(
+                $expected,
+                $actual,
+                $expectedAsString,
+                $actualAsString
+            );
+        }
 
         $exception = new \PHPUnit_Framework_ExpectationFailedException('ExpectationFailed', $comparisonFailure);
         $result = new \PHPUnit_Framework_TestResult();
