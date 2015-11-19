@@ -14,8 +14,8 @@ PHPUnit TeamCity TestListener
 Requirements
 ------------
 
-* PHPUnit 3.7
-* TeamCity 7.0+
+* PHPUnit >=3.7, <6.0
+* TeamCity >=7.0
 
 Installation
 ------------
