@@ -4,6 +4,9 @@ namespace PHPUnit\TeamCity;
 
 class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_TestListener
 {
+    /**
+     * Teamcity service message names
+     */
     const MESSAGE_SUITE_STARTED = 'testSuiteStarted';
     const MESSAGE_SUITE_FINISHED = 'testSuiteFinished';
     const MESSAGE_TEST_STARTED = 'testStarted';
@@ -11,9 +14,15 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     const MESSAGE_TEST_IGNORED = 'testIgnored';
     const MESSAGE_TEST_FINISHED = 'testFinished';
 
+    /**
+     * Comparison failure message type
+     */
     const MESSAGE_COMPARISON_FAILURE = 'comparisonFailure';
 
     /**
+     * If true, all the standard output (and standard error) messages
+     * received between testStarted and testFinished messages will be considered test output
+     *
      * @var string
      */
     protected $captureStandardOutput = 'true';
@@ -41,19 +50,28 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     protected function createServiceMessage($type, \PHPUnit_Framework_Test $test, array $params = array())
     {
-        list($usec, $sec) = explode(' ', microtime());
-        $msec = floor($usec * 1000);
         $params += array(
             'name' => $this->getTestName($test),
-            'timestamp' => date("Y-m-d\\TH:i:s.{$msec}O", $sec),
+            'timestamp' => $this->getTimestamp(),
             'flowId' => $this->getFlowId($test)
         );
-        $message = "##teamcity[{$type}";
+        $attributes = '';
         foreach ($params as $name => $value) {
-            $message .= ' ' . $name . '=\'' . $this->escapeValue($value) . '\'';
+            $attributes .= sprintf(" %s='%s'", $name, $this->escapeValue($value));
         }
-        $message .= "]" . PHP_EOL;
-        return $message;
+        return sprintf('##teamcity[%s%s]%s', $type, $attributes, PHP_EOL);
+    }
+
+    /**
+     * Create timestamp for service message
+     *
+     * @return string
+     */
+    protected function getTimestamp()
+    {
+        list($usec, $sec) = explode(' ', microtime());
+        $msec = floor($usec * 1000);
+        return date("Y-m-d\\TH:i:s.{$msec}O", $sec);
     }
 
     /**
@@ -195,6 +213,19 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
             )
         );
     }
+
+    /**
+     * A failure occurred.
+     *
+     * @param PHPUnit_Framework_Test $test
+     * @param PHPUnit_Framework_Warning $e
+     * @param float $time
+     */
+    public function addWarning(\PHPUnit_Framework_Test $test, \PHPUnit_Framework_Warning $e, $time)
+    {
+        $this->addError($test, $e, $time);
+    }
+
 
     /**
      * A test suite started.

@@ -10,6 +10,8 @@ use SebastianBergmann\Comparator\ComparisonFailure;
 class TestListenerTest extends \PHPUnit_Framework_TestCase
 {
     /**
+     * Listener to test
+     *
      * @var TestListener
      */
     private $listener;
@@ -167,6 +169,27 @@ EOS;
 
         $expectedOutputStart = <<<EOS
 ##teamcity[testFailed message='Assertion error' details='
+EOS;
+        $this->assertStringStartsWith($expectedOutputStart, $this->readOut());
+
+        $expectedOutputEnd = <<<EOS
+ name='FailedTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+
+EOS;
+
+        $this->assertStringEndsWith($expectedOutputEnd, $this->readOut());
+    }
+
+    public function testAddWarning()
+    {
+        $test = $this->createTestMock('FailedTest');
+        $exception = new \PHPUnit_Framework_Warning('Assertion warning');
+        $time = 5;
+
+        $this->listener->addWarning($test, $exception, $time);
+
+        $expectedOutputStart = <<<EOS
+##teamcity[testFailed message='Assertion warning' details='
 EOS;
         $this->assertStringStartsWith($expectedOutputStart, $this->readOut());
 
