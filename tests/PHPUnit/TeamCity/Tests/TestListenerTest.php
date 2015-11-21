@@ -180,7 +180,7 @@ EOS;
 
     public function testAddWarningIsCompatibleWithLessThanPHPUnit51Version()
     {
-        if (version_compare(\PHPUnit_Runner_Version::id(), '5.1', '>')) {
+        if (version_compare(\PHPUnit_Runner_Version::id(), '5.0.99', '>')) {
             $this->markTestSkipped();
         }
 
@@ -198,7 +198,7 @@ EOS;
     }
 
     /**
-     * @requires PHPUnit 5.1
+     * @requires PHPUnit 5.0.99
      */
     public function testAddWarning()
     {
