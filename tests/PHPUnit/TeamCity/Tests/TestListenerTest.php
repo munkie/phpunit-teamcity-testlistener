@@ -2,14 +2,16 @@
 
 namespace PHPUnit\TeamCity\Tests;
 
-use PHPUnit\TeamCity\TestListener;
 use AspectMock;
+use PHPUnit\TeamCity\TestListener;
 use PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest;
 use SebastianBergmann\Comparator\ComparisonFailure;
 
 class TestListenerTest extends \PHPUnit_Framework_TestCase
 {
     /**
+     * Listener to test
+     *
      * @var TestListener
      */
     private $listener;
@@ -47,7 +49,7 @@ class TestListenerTest extends \PHPUnit_Framework_TestCase
 
 EOS;
 
-        $this->assertOutputEquals($expected);
+        $this->assertOutputSame($expected);
     }
 
     public function testEndTest()
@@ -62,7 +64,7 @@ EOS;
 
 EOS;
 
-        $this->assertOutputEquals($expected);
+        $this->assertOutputSame($expected);
     }
 
     public function testStartTestSuite()
@@ -75,7 +77,7 @@ EOS;
 
 EOS;
 
-        $this->assertOutputEquals($expected);
+        $this->assertOutputSame($expected);
     }
 
     public function testEndTestSuite()
@@ -88,7 +90,7 @@ EOS;
 
 EOS;
 
-        $this->assertOutputEquals($expected);
+        $this->assertOutputSame($expected);
     }
 
     public function testAddSkippedTest()
@@ -103,7 +105,7 @@ EOS;
 
 EOS;
 
-        $this->assertOutputEquals($expected);
+        $this->assertOutputSame($expected);
     }
 
     public function testAddIncompleteTest()
@@ -118,7 +120,7 @@ EOS;
 
 EOS;
 
-        $this->assertOutputEquals($expected);
+        $this->assertOutputSame($expected);
     }
 
     public function testAddRiskyTest()
@@ -133,7 +135,7 @@ EOS;
 
 EOS;
 
-        $this->assertOutputEquals($expected);
+        $this->assertOutputSame($expected);
     }
 
     public function testAddError()
@@ -147,14 +149,13 @@ EOS;
         $expectedOutputStart = <<<EOS
 ##teamcity[testFailed message='Exception: ErrorMessage' details='
 EOS;
-        $this->assertStringStartsWith($expectedOutputStart, $this->readOut());
 
         $expectedOutputEnd = <<<EOS
  name='UnitTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
 
 EOS;
 
-        $this->assertStringEndsWith($expectedOutputEnd, $this->readOut());
+        $this->assertOutputStartsAndEndsWith($expectedOutputStart, $expectedOutputEnd);
     }
 
     public function testAddFailure()
@@ -168,14 +169,53 @@ EOS;
         $expectedOutputStart = <<<EOS
 ##teamcity[testFailed message='Assertion error' details='
 EOS;
-        $this->assertStringStartsWith($expectedOutputStart, $this->readOut());
 
         $expectedOutputEnd = <<<EOS
  name='FailedTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
 
 EOS;
 
-        $this->assertStringEndsWith($expectedOutputEnd, $this->readOut());
+        $this->assertOutputStartsAndEndsWith($expectedOutputStart, $expectedOutputEnd);
+    }
+
+    public function testAddWarningIsCompatibleWithLessThanPHPUnit51Version()
+    {
+        if (version_compare(\PHPUnit_Runner_Version::id(), '5.0.99', '>')) {
+            $this->markTestSkipped();
+        }
+
+        $test = $this->createTestMock('FailedTest');
+        $exception = new \PHPUnit_Framework_Warning('Assertion warning');
+        $time = 5;
+
+        $this->listener->addWarning($test, $exception, $time);
+
+        $expectedOutput = <<<EOS
+##teamcity[testFailed message='Assertion warning' name='FailedTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+
+EOS;
+        $this->assertOutputSame($expectedOutput);
+    }
+
+    /**
+     * @requires PHPUnit 5.0.99
+     */
+    public function testAddWarning()
+    {
+        $test = $this->createTestMock('FailedTest');
+        $exception = new \PHPUnit_Framework_Warning('Assertion warning');
+        $time = 5;
+
+        $this->listener->addWarning($test, $exception, $time);
+
+        $expectedOutputStart = <<<EOS
+##teamcity[testFailed message='Assertion warning' details='
+EOS;
+        $expectedOutputEnd = <<<EOE
+name='FailedTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+
+EOE;
+        $this->assertOutputStartsAndEndsWith($expectedOutputStart, $expectedOutputEnd);
     }
 
     public function testAddFailureWithComparisonFailure()
@@ -219,20 +259,16 @@ EOS;
 
         $this->listener->addFailure($testCaseMock, $exception, $time);
 
-        $message = $this->readOut();
-
         $expectedOutputStart = <<<EOS
 ##teamcity[testFailed message='ExpectationFailed|n--- Expected|n+++ Actual|n@@ @@|n-expectedAsString|n+actualAsString' details=
 EOS;
-        $this->assertStringStartsWith($expectedOutputStart, $message);
-
 
         $expectedOutputEnd = <<<EOS
  type='comparisonFailure' expected='expectedAsString' actual='actualAsString' name='testMethod' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
 
 EOS;
 
-        $this->assertStringEndsWith($expectedOutputEnd, $message);
+        $this->assertOutputStartsAndEndsWith($expectedOutputStart, $expectedOutputEnd);
     }
 
     public function testTrailingSpacesAreRemovedFromMessage()
@@ -243,12 +279,15 @@ EOS;
         
         $this->listener->addError($test, $exception, 5);
 
-        $message = $this->readOut();
-
         $expectedOutputStart = <<<EOS
-##teamcity[testFailed message='RuntimeException: |n|nError|nwith newlines' details=
+##teamcity[testFailed message='RuntimeException: |n|nError|nwith newlines' details='
 EOS;
-        $this->assertStringStartsWith($expectedOutputStart, $message);
+        $expectedOutputEnd = <<<EOE
+' name='ErrorTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+
+EOE;
+
+        $this->assertOutputStartsAndEndsWith($expectedOutputStart, $expectedOutputEnd);
     }
 
     public function testMessageNameForTestWithDataProvider()
@@ -303,7 +342,7 @@ EOS;
 
 EOS;
 
-        $this->assertOutputEquals($expectedOutput);
+        $this->assertOutputSame($expectedOutput);
     }
 
     public function testMethodNameForSelfDescribingTest()
@@ -313,8 +352,11 @@ EOS;
 
         $this->listener->startTest($test);
 
-        $expectedPrefix = "##teamcity[testStarted captureStandardOutput='true' name='$filename' timestamp='";
-        $this->assertStringStartsWith($expectedPrefix, $this->readOut());
+        $expectedOutput = <<<EOS
+##teamcity[testStarted captureStandardOutput='true' name='$filename' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
+
+EOS;
+        $this->assertOutputSame($expectedOutput);
     }
 
     /**
@@ -329,12 +371,27 @@ EOS;
     }
 
     /**
-     * @param string $expectedOutput
-     * @param string $message
+     * @param string $expectedOutput Expected output
+     * @param string $message Custom assertions message
      */
-    private function assertOutputEquals($expectedOutput, $message = '')
+    private function assertOutputSame($expectedOutput, $message = '')
     {
-        $this->assertEquals($expectedOutput, $this->readOut(), $message);
+        $output = $this->readOut();
+        $message = $message ?: $output;
+        static::assertSame($expectedOutput, $output, $message);
+    }
+
+    /**
+     * @param string $expectedStart Expected output prefix
+     * @param string $expectedEnd Expected output suffix
+     * @param string $message Custom assertions message
+     */
+    private function assertOutputStartsAndEndsWith($expectedStart, $expectedEnd, $message = '')
+    {
+        $output = $this->readOut();
+        $message = $message ?: $output;
+        static::assertStringStartsWith($expectedStart, $output, $message);
+        static::assertStringEndsWith($expectedEnd, $output, $message);
     }
 
     /**
