@@ -42,6 +42,10 @@ matrix:
       env: PHPUNIT_VERSION="5.1.x-dev"
     - php: 5.6
       env: PHPUNIT_VERSION="5.2.x-dev"
+    - php: 7.0
+      env: PHPUNIT_VERSION="6.0.x-dev"
+    - php: 7.0
+      env: PHPUNIT_VERSION="dev-master"
   allow_failures:
     - php: 7.0
     - php: hhvm
@@ -49,7 +53,8 @@ matrix:
     - env: PHPUNIT_VERSION="5.0.x-dev"
     - env: PHPUNIT_VERSION="5.1.x-dev"
     - env: PHPUNIT_VERSION="5.2.x-dev"
-
+    - env: PHPUNIT_VERSION="6.0.x-dev"
+    - env: PHPUNIT_VERSION="dev-master"
 
 before_script:
     - composer require phpunit/phpunit:${PHPUNIT_VERSION} -n --prefer-source
