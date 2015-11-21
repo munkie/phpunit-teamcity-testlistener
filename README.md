@@ -26,7 +26,7 @@ Here is a minimal example of a `composer.json` file:
 ```json
 {
     "require-dev": {
-        "munkie/phpunit-teamcity-testlistener": "dev-master"
+        "munkie/phpunit-teamcity-testlistener": "~1.2"
     }
 }
 ```
