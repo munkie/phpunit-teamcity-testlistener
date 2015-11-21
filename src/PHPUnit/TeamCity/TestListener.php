@@ -55,11 +55,11 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
             'timestamp' => $this->getTimestamp(),
             'flowId' => $this->getFlowId($test)
         );
-        $attributes = '';
+        $attributes = array();
         foreach ($params as $name => $value) {
-            $attributes .= sprintf(" %s='%s'", $name, $this->escapeValue($value));
+            $attributes[] = sprintf("%s='%s'", $name, $this->escapeValue($value));
         }
-        return sprintf('##teamcity[%s%s]%s', $type, $attributes, PHP_EOL);
+        return sprintf('##teamcity[%s %s]%s', $type, implode(' ', $attributes), PHP_EOL);
     }
 
     /**
@@ -174,13 +174,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     public function addIncompleteTest(\PHPUnit_Framework_Test $test, \Exception $e, $time)
     {
-        $this->writeServiceMessage(
-            self::MESSAGE_TEST_IGNORED,
-            $test,
-            array(
-                'message' => $e->getMessage(),
-            )
-        );
+        $this->addSkippedTest($test, $e, $time);
     }
 
     /**
@@ -193,7 +187,7 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      */
     public function addRiskyTest(\PHPUnit_Framework_Test $test, \Exception $e, $time)
     {
-        $this->addIncompleteTest($test, $e, $time);
+        $this->addSkippedTest($test, $e, $time);
     }
 
     /**
@@ -217,13 +211,24 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     /**
      * A failure occurred.
      *
-     * @param PHPUnit_Framework_Test $test
-     * @param PHPUnit_Framework_Warning $e
+     * @param \PHPUnit_Framework_Test $test
+     * @param \PHPUnit_Framework_Warning $e
      * @param float $time
      */
     public function addWarning(\PHPUnit_Framework_Test $test, \PHPUnit_Framework_Warning $e, $time)
     {
-        $this->addError($test, $e, $time);
+        // Since PHPUnit 5.1
+        if ($e instanceof \Exception) {
+            $this->addError($test, $e, $time);
+        } else {
+            $this->writeServiceMessage(
+                self::MESSAGE_TEST_FAILED,
+                $test,
+                array(
+                    'message' => $e->getMessage(),
+                )
+            );
+        }
     }
 
 
