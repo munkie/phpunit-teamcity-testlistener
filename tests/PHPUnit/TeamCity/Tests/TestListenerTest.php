@@ -3,11 +3,21 @@
 namespace PHPUnit\TeamCity\Tests;
 
 use AspectMock;
+use PHPUnit\Framework\AssertionFailedError;
+use PHPUnit\Framework\DataProviderTestSuite;
+use PHPUnit\Framework\ExpectationFailedException;
+use PHPUnit\Framework\Test;
+use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestResult;
+use PHPUnit\Framework\TestSuite;
+use PHPUnit\Framework\Warning;
+use PHPUnit\Runner\PhptTestCase;
+use PHPUnit\Runner\Version;
 use PHPUnit\TeamCity\TestListener;
 use PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest;
 use SebastianBergmann\Comparator\ComparisonFailure;
 
-class TestListenerTest extends \PHPUnit_Framework_TestCase
+class TestListenerTest extends TestCase
 {
     /**
      * Listener to test
@@ -69,7 +79,7 @@ EOS;
 
     public function testStartTestSuite()
     {
-        $testSuite = new \PHPUnit_Framework_TestSuite('TestSuite');
+        $testSuite = new TestSuite('TestSuite');
 
         $this->listener->startTestSuite($testSuite);
         $expected = <<<EOS
@@ -82,7 +92,7 @@ EOS;
 
     public function testEndTestSuite()
     {
-        $testSuite = new \PHPUnit_Framework_TestSuite('TestSuite');
+        $testSuite = new TestSuite('TestSuite');
 
         $this->listener->endTestSuite($testSuite);
         $expected = <<<EOS
@@ -161,7 +171,7 @@ EOS;
     public function testAddFailure()
     {
         $test = $this->createTestMock('FailedTest');
-        $exception = new \PHPUnit_Framework_AssertionFailedError('Assertion error');
+        $exception = new AssertionFailedError('Assertion error');
         $time = 5;
 
         $this->listener->addFailure($test, $exception, $time);
@@ -178,50 +188,10 @@ EOS;
         $this->assertOutputStartsAndEndsWith($expectedOutputStart, $expectedOutputEnd);
     }
 
-    public function testAddWarningIsCompatibleWithLessThanPHPUnit51Version()
-    {
-        if (version_compare(\PHPUnit_Runner_Version::id(), '5.0.99', '>')) {
-            $this->markTestSkipped();
-        }
-
-        $test = $this->createTestMock('FailedTest');
-        $exception = new \PHPUnit_Framework_Warning('Assertion warning');
-        $time = 5;
-
-        $this->listener->addWarning($test, $exception, $time);
-
-        $expectedOutput = <<<EOS
-##teamcity[testFailed message='Assertion warning' name='FailedTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-
-EOS;
-        $this->assertOutputSame($expectedOutput);
-    }
-
-    /**
-     * @requires PHPUnit 5.0.99
-     */
-    public function testAddWarning()
-    {
-        $test = $this->createTestMock('FailedTest');
-        $exception = new \PHPUnit_Framework_Warning('Assertion warning');
-        $time = 5;
-
-        $this->listener->addWarning($test, $exception, $time);
-
-        $expectedOutputStart = <<<EOS
-##teamcity[testFailed message='Assertion warning' details='
-EOS;
-        $expectedOutputEnd = <<<EOE
-name='FailedTest' timestamp='2015-05-28T16:14:12.17+0700' flowId='24107']
-
-EOE;
-        $this->assertOutputStartsAndEndsWith($expectedOutputStart, $expectedOutputEnd);
-    }
-
     public function testAddFailureWithComparisonFailure()
     {
-        /* @var \PHPUnit_Framework_TestCase $testCaseMock */
-        $testCaseMock = $this->getMockForAbstractClass('\PHPUnit_Framework_TestCase', array('testMethod'), 'TestCase');
+        /* @var TestCase $testCaseMock */
+        $testCaseMock = $this->getMockForAbstractClass(TestCase::class, array('testMethod'), 'TestCase');
 
         $test = $this->createTestMock('FailedTest');
 
@@ -230,26 +200,15 @@ EOE;
         $expectedAsString = 'expectedAsString';
         $actualAsString = 'actualAsString';
 
-        // PHPUnit versions <4.1 ComparisonFailure was part of phpunit
-        if (class_exists('PHPUnit_Framework_ComparisonFailure')) {
-            $comparisonFailure = new \PHPUnit_Framework_ComparisonFailure(
-                $expected,
-                $actual,
-                $expectedAsString,
-                $actualAsString
-            );
-        // PHPUnit versions >=4.1 ComparisonFailure was moved to sebastianbergmann/comparator package
-        } else {
-            $comparisonFailure = new ComparisonFailure(
-                $expected,
-                $actual,
-                $expectedAsString,
-                $actualAsString
-            );
-        }
+        $comparisonFailure = new ComparisonFailure(
+            $expected,
+            $actual,
+            $expectedAsString,
+            $actualAsString
+        );
 
-        $exception = new \PHPUnit_Framework_ExpectationFailedException('ExpectationFailed', $comparisonFailure);
-        $result = new \PHPUnit_Framework_TestResult();
+        $exception = new ExpectationFailedException('ExpectationFailed', $comparisonFailure);
+        $result = new TestResult();
         $result->addFailure($test, $exception, 2);
         $result->addFailure($test, $exception, 3);
 
@@ -293,13 +252,13 @@ EOE;
     public function testMessageNameForTestWithDataProvider()
     {
         $theClass = new \ReflectionClass('\PHPUnit\TeamCity\Tests\Fixtures\DataProviderTest');
-        $testSuite = new \PHPUnit_Framework_TestSuite($theClass);
+        $testSuite = new TestSuite($theClass);
 
         $tests = $testSuite->tests();
 
         $this->assertArrayHasKey(0, $tests);
-        $this->assertInstanceOf('PHPUnit_Framework_TestSuite_DataProvider', $tests[0]);
-        /* @var \PHPUnit_Framework_TestSuite_DataProvider $dataProviderTestSuite */
+        $this->assertInstanceOf(DataProviderTestSuite::class, $tests[0]);
+        /* @var DataProviderTestSuite $dataProviderTestSuite */
         $dataProviderTestSuite = $tests[0];
 
         $this->assertArrayHasKey(1, $tests);
@@ -348,7 +307,7 @@ EOS;
     public function testMethodNameForSelfDescribingTest()
     {
         $filename = __DIR__ . '/Fixtures/example.phpt';
-        $test = new \PHPUnit_Extensions_PhptTestCase($filename);
+        $test = new PhptTestCase($filename);
 
         $this->listener->startTest($test);
 
@@ -361,11 +320,11 @@ EOS;
 
     /**
      * @param string $className
-     * @return \PHPUnit_Framework_MockObject_MockObject|\PHPUnit_Framework_Test
+     * @return \PHPUnit_Framework_MockObject_MockObject|Test
      */
     private function createTestMock($className)
     {
-        return $this->getMockBuilder('\PHPUnit_Framework_Test')
+        return $this->getMockBuilder(Test::class)
             ->setMockClassName($className)
             ->getMock();
     }

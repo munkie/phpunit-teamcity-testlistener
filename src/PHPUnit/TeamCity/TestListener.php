@@ -2,7 +2,20 @@
 
 namespace PHPUnit\TeamCity;
 
-class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_TestListener
+use PHPUnit\Framework\AssertionFailedError;
+use PHPUnit\Framework\Exception;
+use PHPUnit\Framework\ExpectationFailedException;
+use PHPUnit\Framework\SelfDescribing;
+use PHPUnit\Framework\Test;
+use PHPUnit\Framework\TestCase;
+use PHPUnit\Framework\TestFailure;
+use PHPUnit\Framework\TestListener as BaseTestListener;
+use PHPUnit\Framework\TestSuite;
+use PHPUnit\Framework\Warning;
+use PHPUnit\Util\Filter;
+use PHPUnit\Util\Printer;
+
+class TestListener extends Printer implements BaseTestListener
 {
     /**
      * Teamcity service message names
@@ -31,10 +44,10 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      * Create and write service message to out
      *
      * @param string $type
-     * @param \PHPUnit_Framework_Test $test
+     * @param Test $test
      * @param array $params
      */
-    protected function writeServiceMessage($type, \PHPUnit_Framework_Test $test, array $params = array())
+    protected function writeServiceMessage($type, Test $test, array $params = array())
     {
         $message = $this->createServiceMessage($type, $test, $params);
         $this->write($message);
@@ -44,11 +57,11 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
      * Create service message
      *
      * @param string $type
-     * @param \PHPUnit_Framework_Test $test
+     * @param Test $test
      * @param array $params
      * @return string
      */
-    protected function createServiceMessage($type, \PHPUnit_Framework_Test $test, array $params = array())
+    protected function createServiceMessage($type, Test $test, array $params = array())
     {
         $params += array(
             'name' => $this->getTestName($test),
@@ -75,16 +88,16 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     }
 
     /**
-     * @param \PHPUnit_Framework_Test $test
+     * @param Test $test
      * @return string
      */
-    protected function getTestName(\PHPUnit_Framework_Test $test)
+    protected function getTestName(Test $test)
     {
-        if ($test instanceof \PHPUnit_Framework_TestCase) {
+        if ($test instanceof TestCase) {
             $name = $test->getName();
-        } elseif ($test instanceof \PHPUnit_Framework_TestSuite) {
+        } elseif ($test instanceof TestSuite) {
             $name = $test->getName();
-        } elseif ($test instanceof \PHPUnit_Framework_SelfDescribing) {
+        } elseif ($test instanceof SelfDescribing) {
             $name = $test->toString();
         } else {
             $name = get_class($test);
@@ -93,10 +106,10 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     }
 
     /**
-     * @param \PHPUnit_Framework_Test $test
+     * @param Test $test
      * @return int
      */
-    protected function getFlowId(\PHPUnit_Framework_Test $test)
+    protected function getFlowId(Test $test)
     {
         return getmypid();
     }
@@ -124,18 +137,29 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     /**
      * An error occurred.
      *
-     * @param \PHPUnit_Framework_Test $test
+     * @param Test $test
      * @param \Exception $e
      * @param float $time
      */
-    public function addError(\PHPUnit_Framework_Test $test, \Exception $e, $time)
+    public function addError(Test $test, \Exception $e, $time)
     {
-        $params = array(
-            'message' => \PHPUnit_Framework_TestFailure::exceptionToString($e),
-            'details' => \PHPUnit_Util_Filter::getFilteredStacktrace($e),
-        );
+        /**
+         * Workaround for wrong TestFailure::exceptionToString signature
+         * @todo revert after merge pull request https://github.com/sebastianbergmann/phpunit/pull/2554
+         */
+        if ($e instanceof Exception) {
+            $params = array(
+                'message' => TestFailure::exceptionToString($e),
+                'details' => Filter::getFilteredStacktrace($e),
+            );
+        } else {
+            $params = array(
+                'message' => get_class($e) . ': ' . $e->getMessage() . "\n",
+                'details' => Filter::getFilteredStacktrace($e),
+            );
+        }
 
-        if ($e instanceof \PHPUnit_Framework_ExpectationFailedException) {
+        if ($e instanceof ExpectationFailedException) {
             $comparisonFailure = $e->getComparisonFailure();
             if (null !== $comparisonFailure) {
                 $params += array(
@@ -156,11 +180,11 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     /**
      * A failure occurred.
      *
-     * @param \PHPUnit_Framework_Test|\PHPUnit_Framework_TestCase $test
-     * @param \PHPUnit_Framework_AssertionFailedError $e
+     * @param Test|TestCase $test
+     * @param AssertionFailedError $e
      * @param float $time
      */
-    public function addFailure(\PHPUnit_Framework_Test $test, \PHPUnit_Framework_AssertionFailedError $e, $time)
+    public function addFailure(Test $test, AssertionFailedError $e, $time)
     {
         $this->addError($test, $e, $time);
     }
@@ -168,11 +192,11 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     /**
      * Incomplete test.
      *
-     * @param \PHPUnit_Framework_Test $test
+     * @param Test $test
      * @param \Exception $e
      * @param float $time
      */
-    public function addIncompleteTest(\PHPUnit_Framework_Test $test, \Exception $e, $time)
+    public function addIncompleteTest(Test $test, \Exception $e, $time)
     {
         $this->addSkippedTest($test, $e, $time);
     }
@@ -180,12 +204,12 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     /**
      * Risky test.
      *
-     * @param \PHPUnit_Framework_Test $test
+     * @param Test $test
      * @param \Exception $e
      * @param float $time
      * @since  Method available since Release 4.0.0
      */
-    public function addRiskyTest(\PHPUnit_Framework_Test $test, \Exception $e, $time)
+    public function addRiskyTest(Test $test, \Exception $e, $time)
     {
         $this->addSkippedTest($test, $e, $time);
     }
@@ -193,11 +217,11 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     /**
      * Skipped test.
      *
-     * @param \PHPUnit_Framework_Test $test
+     * @param Test $test
      * @param \Exception $e
      * @param float $time
      */
-    public function addSkippedTest(\PHPUnit_Framework_Test $test, \Exception $e, $time)
+    public function addSkippedTest(Test $test, \Exception $e, $time)
     {
         $this->writeServiceMessage(
             self::MESSAGE_TEST_IGNORED,
@@ -211,11 +235,11 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     /**
      * A failure occurred.
      *
-     * @param \PHPUnit_Framework_Test $test
-     * @param \PHPUnit_Framework_Warning $e
+     * @param Test $test
+     * @param Warning $e
      * @param float $time
      */
-    public function addWarning(\PHPUnit_Framework_Test $test, \PHPUnit_Framework_Warning $e, $time)
+    public function addWarning(Test $test, Warning $e, $time)
     {
         // Since PHPUnit 5.1
         if ($e instanceof \Exception) {
@@ -235,9 +259,9 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     /**
      * A test suite started.
      *
-     * @param \PHPUnit_Framework_TestSuite $suite
+     * @param TestSuite $suite
      */
-    public function startTestSuite(\PHPUnit_Framework_TestSuite $suite)
+    public function startTestSuite(TestSuite $suite)
     {
         $this->writeServiceMessage(
             self::MESSAGE_SUITE_STARTED,
@@ -248,9 +272,9 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     /**
      * A test suite ended.
      *
-     * @param \PHPUnit_Framework_TestSuite $suite
+     * @param TestSuite $suite
      */
-    public function endTestSuite(\PHPUnit_Framework_TestSuite $suite)
+    public function endTestSuite(TestSuite $suite)
     {
         $this->writeServiceMessage(
             self::MESSAGE_SUITE_FINISHED,
@@ -261,9 +285,9 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     /**
      * A test started.
      *
-     * @param \PHPUnit_Framework_Test $test
+     * @param Test $test
      */
-    public function startTest(\PHPUnit_Framework_Test $test)
+    public function startTest(Test $test)
     {
         $this->writeServiceMessage(
             self::MESSAGE_TEST_STARTED,
@@ -277,10 +301,10 @@ class TestListener extends \PHPUnit_Util_Printer implements \PHPUnit_Framework_T
     /**
      * A test ended.
      *
-     * @param \PHPUnit_Framework_Test $test
+     * @param Test $test
      * @param float $time seconds
      */
-    public function endTest(\PHPUnit_Framework_Test $test, $time)
+    public function endTest(Test $test, $time)
     {
         $this->writeServiceMessage(
             self::MESSAGE_TEST_FINISHED,

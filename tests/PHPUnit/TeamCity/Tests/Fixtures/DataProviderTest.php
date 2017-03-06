@@ -2,7 +2,9 @@
 
 namespace PHPUnit\TeamCity\Tests\Fixtures;
 
-class DataProviderTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class DataProviderTest extends TestCase
 {
     /**
      * @dataProvider dataProviderWithKeys
@@ -22,6 +24,7 @@ class DataProviderTest extends \PHPUnit_Framework_TestCase
     public function testDuration()
     {
         usleep(2500000);
+        $this->assertTrue(true);
     }
 
     /**
