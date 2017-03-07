@@ -1,5 +1,10 @@
 PHPUnit TeamCity TestListener
 ========================================
+
+# Package is abandoned.
+Use phpunit [--teamcity](https://phpunit.de/manual/current/en/textui.html#textui.clioptions) option to report test execution progress in TeamCity format. 
+
+---
 [![Latest Stable Version](https://poser.pugx.org/munkie/phpunit-teamcity-testlistener/v/stable)](https://packagist.org/packages/munkie/phpunit-teamcity-testlistener)
 [![Total Downloads](https://poser.pugx.org/munkie/phpunit-teamcity-testlistener/downloads)](https://packagist.org/packages/munkie/phpunit-teamcity-testlistener)
 [![License](https://poser.pugx.org/munkie/phpunit-teamcity-testlistener/license)](https://packagist.org/packages/munkie/phpunit-teamcity-testlistener)
