@@ -2,10 +2,10 @@
     "name": "munkie/phpunit-teamcity-testlistener",
     "description": "PHPUnit test listener for TeamCity CI Server",
     "require": {
-        "phpunit/phpunit": ">=3.7,<6.0"
+        "phpunit/phpunit": "^6.0"
     },
     "require-dev": {
-        "codeception/aspect-mock": "~0.5",
+        "codeception/aspect-mock": "^2",
         "scrutinizer/ocular": "~1.0"
     },
     "license": "MIT",

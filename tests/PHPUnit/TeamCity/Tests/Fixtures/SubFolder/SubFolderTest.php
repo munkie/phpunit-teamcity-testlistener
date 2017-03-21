@@ -2,7 +2,9 @@
 
 namespace PHPUnit\TeamCity\Tests\Fixtures\SubFolder;
 
-class SubFolderTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class SubFolderTest extends TestCase
 {
     public function testSubMethod()
     {

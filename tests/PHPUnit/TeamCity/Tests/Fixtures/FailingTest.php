@@ -2,7 +2,9 @@
 
 namespace PHPUnit\TeamCity\Tests\Fixtures;
 
-class FailingTest extends \PHPUnit_Framework_TestCase
+use PHPUnit\Framework\TestCase;
+
+class FailingTest extends TestCase
 {
     public function testShouldFailSame()
     {
